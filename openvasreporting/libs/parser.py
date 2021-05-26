@@ -12,8 +12,6 @@ from .parsed_data import Host, Port, Vulnerability
 
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG,
                     format="%(asctime)s | %(levelname)s | %(name)s | %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
-# logging.basicConfig(stream=sys.stderr, level=logging.ERROR,
-#                    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
 
 __all__ = ["openvas_parser"]
 
@@ -59,7 +57,7 @@ def openvas_parser(input_files, min_level=Config.levels()["n"]):
         root = Et.parse(f_file).getroot()
 
         logging.debug(
-            "================================================================================")
+        "================================================================================")
 #        logging.debug("= {}".format(root.find("./task/name").text))  # DEBUG
         logging.debug(
             "================================================================================")
@@ -122,7 +120,7 @@ def openvas_parser(input_files, min_level=Config.levels()["n"]):
             logging.debug("* hostname:\t{}".format(vuln_host_name))  # DEBUG
             vuln_port = vuln.find("./port").text
             logging.debug(
-                "* vuln_host:\t{} port:\t{}".format(vuln_host, vuln_port))  # DEBUG
+                "* vuln_host:\t{} ({}) port:\t{}".format(vuln_host_name, vuln_host, vuln_port))  # DEBUG
 
             # --------------------
             #
@@ -146,6 +144,14 @@ def openvas_parser(input_files, min_level=Config.levels()["n"]):
                 vuln_threat = vuln_threat.lower()
 
             logging.debug("* vuln_threat:\t{}".format(vuln_threat))  # DEBUG
+
+            # --------------------
+            #
+            # VULN_QOD
+            try:
+                vuln_qod = int(vuln.find("./qod/value").text)
+            except (TypeError, ValueError):
+                vuln_qod = None
 
             # --------------------
             #
@@ -204,7 +210,7 @@ def openvas_parser(input_files, min_level=Config.levels()["n"]):
             # STORE VULN_HOSTS PER VULN
             host = Host(vuln_host, host_name=vuln_host_name)
             try:
-                # added results to port function as will ne unique per port on each host.
+                # added results to port function as will be unique per port on each host.
                 port = Port.string2port(vuln_port, vuln_result)
             except ValueError:
                 port = None
@@ -220,7 +226,8 @@ def openvas_parser(input_files, min_level=Config.levels()["n"]):
                                            cves=vuln_cves,
                                            references=vuln_references,
                                            family=vuln_family,
-                                           level=vuln_level)
+                                           level=vuln_level,
+                                           qod=vuln_qod)
 
             vuln_store.add_vuln_host(host, port)
             vulnerabilities[vuln_id] = vuln_store

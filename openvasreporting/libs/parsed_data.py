@@ -8,7 +8,8 @@
 
 import re
 
-# Port object modifed to include result data field
+
+# Port object modified to include result data field
 class Port(object):
     """Port information"""
 
@@ -20,8 +21,8 @@ class Port(object):
         :param protocol: port protocol (tcp, udp, ...)
         :type protocol: basestring
 
-	:param result: port result
-	:type result: str
+    :param result: port result
+    :type result: str
 
         :raises: TypeError, ValueError
         """
@@ -43,10 +44,10 @@ class Port(object):
 
     # Modified to include result in structure
     @staticmethod
-    def string2port(info,result):
+    def string2port(info, result):
         """
         Extract port number, protocol and description from an string.
-	return a port class with seperate port, protocol and result
+    return a port class with seperate port, protocol and result
 
         ..note:
             Raises value error if information can't be processed.
@@ -56,16 +57,16 @@ class Port(object):
           2000
         # >>> print p.proto
           "tcp"
-	# >>> print p.result
-	  "result string"
+    # >>> print p.result
+      "result string"
 
         # >>> p=Port.string2port("general/icmp", "string test")
         # >>> print p.number
           0
         # >>> print p.proto
           "icmp"
-	# >>> print p.result
-	  "string test"
+    # >>> print p.result
+      "string test"
 
         :param info: raw string with port information
         :type info: basestring
@@ -84,8 +85,8 @@ class Port(object):
         if not isinstance(result, str):
             raise TypeError("Expected basestring, got '{}' instead".format(type(result)))
 
-        regex_nr = re.search("([\d]+)(/)([\w]+)", info)
-        regex_general = re.search("(general)(/)([\w]+)", info)
+        regex_nr = re.search(r"([\d]+)(/)([\w]+)", info)
+        regex_general = re.search(r"(general)(/)([\w]+)", info)
 
         if regex_nr and len(regex_nr.groups()) == 3:
             number = int(regex_nr.group(1))
@@ -121,12 +122,14 @@ class Host(object):
         :raises: TypeError
         """
         if not isinstance(ip, str):
-            raise TypeError("Expected basestring, got '{}' instead".format(type(ip)))
-        if not isinstance(host_name, str):
-            raise TypeError("Expected basestring, got '{}' instead".format(type(host_name)))
+            raise TypeError("Expected basestring, got '{0}' instead".format(type(ip)))
+        if isinstance(host_name, str):
+            # raise TypeError("Expected basestring, got '{0}' instead".format(type(host_name)))
+            self.host_name = host_name
+        else:
+            self.host_name = ""
 
         self.ip = ip
-        self.host_name = host_name
 
     def __eq__(self, other):
         return (
@@ -169,7 +172,10 @@ class Vulnerability(object):
         :type family: str
 
         :param result: Vulnerability result
-        :type description: str
+        :type result: str
+
+        :param qod Vulnerability Quality of Detection
+        :type qod: int
 
         :raises: TypeError, ValueError
         """
@@ -181,6 +187,7 @@ class Vulnerability(object):
         references = kwargs.get("references", "Uknown") or "Unknown"
         family = kwargs.get("family", "Unknown") or "Unknown"
         result = kwargs.get("description", "Unknown") or "Unknown"
+        qod = kwargs.get("qod", None) or None
 
         if not isinstance(vuln_id, str):
             raise TypeError("Expected basestring, got '{}' instead".format(type(vuln_id)))
@@ -217,10 +224,10 @@ class Vulnerability(object):
         self.cves = cves
         self.cvss = float(cvss)
         self.level = level
-        self.description = tags.get('summary', '')
+        self.description = tags.get('summary', '').replace('\n', ' ')
         self.detect = tags.get('vuldetect', '')
         self.insight = tags.get('insight', '')
-        self.impact = tags.get('impact', '')
+        self.impact = tags.get('impact', '').replace('\n', ' ')
         self.affected = tags.get('affected', '')
         self.solution = tags.get('solution', '')
         self.solution_type = tags.get('solution_type', '')
@@ -228,6 +235,7 @@ class Vulnerability(object):
         self.threat = threat
         self.family = family
         self.result = result
+        self.qod = qod
 
         # Hosts
         self.hosts = []

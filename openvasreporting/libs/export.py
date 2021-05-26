@@ -13,8 +13,9 @@ from .parsed_data import Vulnerability
 # DEBUG
 import sys
 import logging
+
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG,
-                     format="%(asctime)s | %(levelname)s | %(name)s | %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+                    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
 
 
 def exporters():
@@ -52,23 +53,23 @@ def _get_collections(vuln_info):
     vuln_host_by_level = Counter()
     vuln_by_family = Counter()
     # collect host names
-    vuln_hostcount_by_level =[[] for _ in range(5)]
+    vuln_host_count_by_level = [[] for _ in range(5)]
     level_choices = {'critical': 0, 'high': 1, 'medium': 2, 'low': 3, 'none': 4}
 
     for i, vuln in enumerate(vuln_info, 1):
         vuln_levels[vuln.level.lower()] += 1
-        # add host names to list so we count unquie hosts per level
+        # add host names to list so we count unique hosts per level
         level_index = level_choices.get(vuln.level.lower())
 
-        for i, (host, port) in enumerate(vuln.hosts, 1):    
-            if host.ip not in vuln_hostcount_by_level[level_index]:
-                vuln_hostcount_by_level[level_index].append(host.ip)       
+        for _, (host, port) in enumerate(vuln.hosts, 1):
+            if host.ip not in vuln_host_count_by_level[level_index]:
+                vuln_host_count_by_level[level_index].append(host.ip)
 
         vuln_by_family[vuln.family] += 1
 
     # now count hosts per level and return
     for level in Config.levels().values():
-        vuln_host_by_level[level] = len((vuln_hostcount_by_level[level_choices.get(level.lower())]))
+        vuln_host_by_level[level] = len((vuln_host_count_by_level[level_choices.get(level.lower())]))
 
     return vuln_info, vuln_levels, vuln_host_by_level, vuln_by_family
 
@@ -166,7 +167,7 @@ def export_to_excel(vuln_info, template=None, output_file='openvas_report.xlsx')
     # SUMMARY SHEET
     # ====================
     sheet_name = "Summary"
-    ws_sum = workbook.add_worksheet(sheet_name)
+    ws_sum = add_worksheet_with_defaults(workbook, sheet_name)
     ws_sum.set_tab_color(Config.colors()['blue'])
 
     ws_sum.set_column("A:A", 7, format_align_center)
@@ -250,21 +251,23 @@ def export_to_excel(vuln_info, template=None, output_file='openvas_report.xlsx')
     # TABLE OF CONTENTS
     # ====================
     sheet_name = "TOC"
-    ws_toc = workbook.add_worksheet(sheet_name)
+    ws_toc = add_worksheet_with_defaults(workbook, sheet_name)
+    ws_toc.repeat_rows(1, 2)
     ws_toc.set_tab_color(Config.colors()['blue'])
 
     ws_toc.set_column("A:A", 7)
     ws_toc.set_column("B:B", 5)
     ws_toc.set_column("C:C", 150)
-    ws_toc.set_column("D:D", 15)
-    ws_toc.set_column("E:E", 50)
-    ws_toc.set_column("F:F", 7)
+    ws_toc.set_column("E:E", 15)
+    ws_toc.set_column("F:F", 50)
+    ws_toc.set_column("G:G", 7)
 
-    ws_toc.merge_range("B2:E2", "TABLE OF CONTENTS", format_sheet_title_content)
+    ws_toc.merge_range("B2:F2", "TABLE OF CONTENTS", format_sheet_title_content)
     ws_toc.write("B3", "No.", format_table_titles)
     ws_toc.write("C3", "Vulnerability", format_table_titles)
-    ws_toc.write("D3", "CVSS Score", format_table_titles)
-    ws_toc.write("E3", "Hosts", format_table_titles)
+    ws_toc.write("D3", "QoD", format_table_titles)
+    ws_toc.write("E3", "CVSS Score", format_table_titles)
+    ws_toc.write("F3", "Hosts", format_table_titles)
 
     # ====================
     # VULN SHEETS
@@ -274,7 +277,8 @@ def export_to_excel(vuln_info, template=None, output_file='openvas_report.xlsx')
         if len(name) > 27:
             name = "{}..{}".format(name[0:15], name[-10:])
         name = "{:03X}_{}".format(i, name)
-        ws_vuln = workbook.add_worksheet(name)
+        ws_vuln = add_worksheet_with_defaults(workbook, name)
+        ws_vuln.repeat_rows(1, 12)
         ws_vuln.set_tab_color(Config.colors()[vuln.level.lower()])
 
         # --------------------
@@ -282,9 +286,10 @@ def export_to_excel(vuln_info, template=None, output_file='openvas_report.xlsx')
         # --------------------
         ws_toc.write("B{}".format(i + 3), "{:03X}".format(i), format_table_cells)
         ws_toc.write_url("C{}".format(i + 3), "internal:'{}'!A1".format(name), format_table_cells, string=vuln.name)
-        ws_toc.write("D{}".format(i + 3), "{:.1f} ({})".format(vuln.cvss, vuln.level.capitalize()),
+        ws_toc.write("D{}".format(i + 3), vuln.qod, format_align_border)
+        ws_toc.write("E{}".format(i + 3), "{:.1f} ({})".format(vuln.cvss, vuln.level.capitalize()),
                      format_toc[vuln.level])
-        ws_toc.write("E{}".format(i + 3), "{}".format(', '.join([host.ip for host, _ in vuln.hosts])),
+        ws_toc.write("F{}".format(i + 3), "{}".format(', '.join([host.ip for host, _ in vuln.hosts])),
                      format_table_cells)
         ws_vuln.write_url("A1", "internal:'{}'!A{}".format(ws_toc.get_name(), i + 3), format_align_center,
                           string="<< TOC")
@@ -348,8 +353,8 @@ def export_to_excel(vuln_info, template=None, output_file='openvas_report.xlsx')
 
         ws_vuln.write('C13', "IP", format_table_titles)
         ws_vuln.write('D13', "Host name", format_table_titles)
-        ws_vuln.write('E13', "Port number", format_table_titles)
-        ws_vuln.write('F13', "Port protocol", format_table_titles)
+        ws_vuln.write('E13', "QoD", format_table_titles)
+        ws_vuln.write('F13', "Port/protocol", format_table_titles)
         ws_vuln.write('G13', "Result", format_table_titles)
 
         # --------------------
@@ -359,16 +364,23 @@ def export_to_excel(vuln_info, template=None, output_file='openvas_report.xlsx')
 
             ws_vuln.write("C{}".format(j), host.ip)
             ws_vuln.write("D{}".format(j), host.host_name if host.host_name else "-")
+            ws_vuln.write("E{}".format(j), vuln.qod)
 
             if port:
-                ws_vuln.write("E{}".format(j), "" if port.number == 0 else port.number)
-                ws_vuln.write("F{}".format(j), port.protocol)
+                ws_vuln.write("F{}".format(j), "" if port.number == 0 else "{0}/{1}".format(port.number, port.protocol))
                 ws_vuln.write("G{}".format(j), port.result, format_table_cells)
                 ws_vuln.set_row(j, __row_height(port.result, content_width), None)
             else:
-                ws_vuln.write("E{}".format(j), "No port info")
+                ws_vuln.write("F{}".format(j), "No port info")
 
     workbook.close()
+
+
+def add_worksheet_with_defaults(workbook, sheet_name):
+    new_worksheet = workbook.add_worksheet(sheet_name)
+    new_worksheet.set_landscape()
+    new_worksheet.fit_to_pages(1, 0)
+    return new_worksheet
 
 
 def export_to_word(vuln_info, template, output_file='openvas_report.docx'):
@@ -659,8 +671,8 @@ def export_to_word(vuln_info, template, output_file='openvas_report.docx'):
         hdr_cells = table_hosts.rows[0].cells
         hdr_cells[0].paragraphs[0].add_run('IP').bold = True
         hdr_cells[1].paragraphs[0].add_run('Host name').bold = True
-        hdr_cells[2].paragraphs[0].add_run('Port number').bold = True
-        hdr_cells[3].paragraphs[0].add_run('Port protocol').bold = True
+        hdr_cells[3].paragraphs[0].add_run('QoD').bold = True
+        hdr_cells[2].paragraphs[0].add_run('Port/Protocol').bold = True
         hdr_cells[4].paragraphs[0].add_run('Port result').bold = True
 
         for j, (host, port) in enumerate(vuln.hosts, 1):
@@ -668,8 +680,8 @@ def export_to_word(vuln_info, template, output_file='openvas_report.docx'):
             cells[0].text = host.ip
             cells[1].text = host.host_name if host.host_name else "-"
             if port and port is not None:
-                cells[2].text = "-" if port.number == 0 else str(port.number)
-                cells[3].text = port.protocol
+                cells[2].text = "QoD"
+                cells[3].text = "-" if port.number == 0 else str(port.number) + "/" + port.protocol
                 cells[4].text = port.result
             else:
                 cells[2].text = "No port info"
