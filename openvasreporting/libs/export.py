@@ -300,78 +300,83 @@ def export_to_excel(vuln_info, template=None, output_file='openvas_report.xlsx')
         # --------------------
         ws_vuln.set_column("A:A", 7, format_align_center)
         ws_vuln.set_column("B:B", 20, format_align_center)
-        ws_vuln.set_column("C:C", 20, format_align_center)
-        ws_vuln.set_column("D:D", 50, format_align_center)
+        ws_vuln.set_column("C:C", 40, format_align_center)
+        ws_vuln.set_column("D:D", 7, format_align_center)
         ws_vuln.set_column("E:E", 15, format_align_center)
-        ws_vuln.set_column("F:F", 15, format_align_center)
-        ws_vuln.set_column("G:G", 20, format_align_center)
-        ws_vuln.set_column("H:H", 7, format_align_center)
+        ws_vuln.set_column("F:F", 58, format_align_center)
+        ws_vuln.set_column('G:G', 7, format_align_center)
+        # ws_vuln.set_column("G:G", 35, format_align_center)
+        # ws_vuln.set_column("H:H", 7, format_align_center)
         content_width = 120
 
         ws_vuln.write('B2', "Title", format_table_titles)
-        ws_vuln.merge_range("C2:G2", vuln.name, format_sheet_title_content)
+        ws_vuln.merge_range("C2:F2", vuln.name, format_sheet_title_content)
         ws_vuln.set_row(1, __row_height(vuln.name, content_width), None)
 
         ws_vuln.write('B3', "Description", format_table_titles)
-        ws_vuln.merge_range("C3:G3", vuln.description, format_table_cells)
+        ws_vuln.merge_range("C3:F3", vuln.description, format_table_cells)
         ws_vuln.set_row(2, __row_height(vuln.description, content_width), None)
 
         ws_vuln.write('B4', "Impact", format_table_titles)
-        ws_vuln.merge_range("C4:G4", vuln.impact, format_table_cells)
+        ws_vuln.merge_range("C4:F4", vuln.impact, format_table_cells)
         ws_vuln.set_row(3, __row_height(vuln.impact, content_width), None)
 
         ws_vuln.write('B5', "Recommendation", format_table_titles)
-        ws_vuln.merge_range("C5:G5", vuln.solution, format_table_cells)
+        ws_vuln.merge_range("C5:F5", vuln.solution, format_table_cells)
         ws_vuln.set_row(4, __row_height(vuln.solution, content_width), None)
 
+        details_as_p = vuln.insight.replace('\n', '')
         ws_vuln.write('B6', "Details", format_table_titles)
-        ws_vuln.merge_range("C6:G6", vuln.insight, format_table_cells)
-        ws_vuln.set_row(5, __row_height(vuln.insight, content_width), None)
+        ws_vuln.merge_range("C6:F6", details_as_p, format_table_cells)
+        ws_vuln.set_row(5, __row_height(details_as_p, content_width), None)
 
         ws_vuln.write('B7', "CVEs", format_table_titles)
         cves = ", ".join(vuln.cves)
         cves = cves.upper() if cves != "" else "No CVE"
-        ws_vuln.merge_range("C7:G7", cves, format_table_cells)
+        ws_vuln.merge_range("C7:F7", cves, format_table_cells)
         ws_vuln.set_row(6, __row_height(cves, content_width), None)
 
         ws_vuln.write('B8', "CVSS", format_table_titles)
         cvss = float(vuln.cvss)
         if cvss >= 0.0:
-            ws_vuln.merge_range("C8:G8", "{:.1f}".format(cvss), format_table_cells)
+            ws_vuln.merge_range("C8:F8", "{:.1f}".format(cvss), format_table_cells)
         else:
-            ws_vuln.merge_range("C8:G8", "{}".format("No CVSS"), format_table_cells)
+            ws_vuln.merge_range("C8:F8", "{}".format("No CVSS"), format_table_cells)
 
         ws_vuln.write('B9', "Level", format_table_titles)
-        ws_vuln.merge_range("C9:G9", vuln.level.capitalize(), format_table_cells)
+        ws_vuln.merge_range("C9:F9", vuln.level.capitalize(), format_table_cells)
 
         ws_vuln.write('B10', "Family", format_table_titles)
-        ws_vuln.merge_range("C10:G10", vuln.family, format_table_cells)
+        ws_vuln.merge_range("C10:F10", vuln.family, format_table_cells)
 
         ws_vuln.write('B11', "References", format_table_titles)
-        ws_vuln.merge_range("C11:G11", vuln.references, format_table_cells)
+        ws_vuln.merge_range("C11:F11", vuln.references, format_table_cells)
         ws_vuln.set_row(10, __row_height(vuln.references, content_width), None)
 
-        ws_vuln.write('C13', "IP", format_table_titles)
-        ws_vuln.write('D13', "Host name", format_table_titles)
-        ws_vuln.write('E13', "QoD", format_table_titles)
-        ws_vuln.write('F13', "Port/protocol", format_table_titles)
-        ws_vuln.write('G13', "Result", format_table_titles)
+        ws_vuln.write('B13', "IP", format_table_titles)
+        ws_vuln.write('C13', "Host name", format_table_titles)
+        ws_vuln.write('D13', "QoD", format_table_titles)
+        ws_vuln.write('E13', "Port/protocol", format_table_titles)
+        ws_vuln.write('F13', "Result", format_table_titles)
 
         # --------------------
         # AFFECTED HOSTS
         # --------------------
         for j, (host, port) in enumerate(vuln.hosts, 14):
 
-            ws_vuln.write("C{}".format(j), host.ip)
-            ws_vuln.write("D{}".format(j), host.host_name if host.host_name else "-")
-            ws_vuln.write("E{}".format(j), vuln.qod)
+            if host.ip is None:
+                continue
+
+            ws_vuln.write("B{}".format(j), host.ip)
+            ws_vuln.write("C{}".format(j), host.host_name if host.host_name else "-")
+            ws_vuln.write("D{}".format(j), vuln.qod)
 
             if port:
-                ws_vuln.write("F{}".format(j), "" if port.number == 0 else "{0}/{1}".format(port.number, port.protocol))
-                ws_vuln.write("G{}".format(j), port.result, format_table_cells)
-                ws_vuln.set_row(j, __row_height(port.result, content_width), None)
+                ws_vuln.write("E{}".format(j), "" if port.number == 0 else "{0}/{1}".format(port.number, port.protocol))
+                ws_vuln.write("F{0}".format(j), port.result.strip(), format_table_cells)
+                ws_vuln.set_row(j-1, __row_height(port.result, 58), None)
             else:
-                ws_vuln.write("F{}".format(j), "No port info")
+                ws_vuln.write("E{}".format(j), "No port info")
 
     workbook.close()
 
