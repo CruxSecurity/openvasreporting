@@ -7,9 +7,8 @@
 # TODO: Get rid of all the log messages
 
 """This file contains data structures"""
-
+import logging
 import re
-
 
 from .config import Config
 import netaddr
@@ -19,13 +18,14 @@ from defusedxml import ElementTree as Et
 #
 # DEBUG
 
-#import logging
-#import sys
-#logging.basicConfig(stream=sys.stderr, level=logging.DEBUG,
+# import logging
+# import sys
+# logging.basicConfig(stream=sys.stderr, level=logging.DEBUG,
 #                    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
-#logging.basicConfig(stream=sys.stderr, level=logging.ERROR,
+# logging.basicConfig(stream=sys.stderr, level=logging.ERROR,
 #                    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
 dolog = False
+
 
 # Port object modified to include result data field
 class Port(object):
@@ -125,10 +125,12 @@ class Port(object):
                 other.result == self.result
         )
 
+
 class ParseVulnerability:
     """
     Parses and analyses a Vulnerability XML Entry
     """
+
     def __init__(self, vuln, min_level: str):
         """
         Parses an openvas <result> xml Et.Element.
@@ -235,7 +237,7 @@ class ParseVulnerability:
         # --------------------
         #
         # VULN_CVES
-        #vuln_cves = nvt_tmp.findall("./refs/ref")
+        # vuln_cves = nvt_tmp.findall("./refs/ref")
         self.vuln_cves = []
         self.ref_list = []
         for reference in nvt_tmp.findall('./refs/ref'):
@@ -272,6 +274,14 @@ class ParseVulnerability:
         else:
             self.vuln_result = self.vuln_result.text
 
+        # --------------------
+        #
+        # VULN_QOD
+        try:
+            self.vuln_qod = int(vuln.find("./qod/value").text)
+        except (TypeError, ValueError):
+            self.vuln_qod = None
+
         # Replace double newlines by a single newline
         self.vuln_result = self.vuln_result.replace("(\r\n)+", "\n")
 
@@ -297,7 +307,6 @@ class ParseVulnerability:
         """
         if not isinstance(config, Config):
             raise TypeError("Expected Config, got '{}' instead".format(type(config)))
-
 
         # nvt has oid?
         vuln_id = vuln.find('./nvt').get('oid')
@@ -370,7 +379,6 @@ class ParseVulnerability:
         if vuln_cvss >= Config.thresholds()[config.min_level]:
             return cls(vuln, config.min_level)
 
-        return None
 
 class Host(object):
     """Host information"""
@@ -398,7 +406,7 @@ class Host(object):
                    'medium': 0,
                    'low': 0,
                    'none': 0
-                  }
+                   }
         self.sum_cvss = 0
         self.higher_cvss = 0
         self.vuln_list = []
@@ -603,6 +611,7 @@ class Vulnerability(object):
 
         return True
 
+
 class ResultTree(dict):
     """
       A dict of Hosts instances
@@ -634,7 +643,7 @@ class ResultTree(dict):
         temp_dict = {}
         for key in self:
             temp_dict[key] = (self[key].higher_cvss, self[key].sum_cvss)
-        s = list({key: v1 for key, v1 in sorted(temp_dict.items(), key=lambda x: (x[1], x[0]), reverse = True)}.keys())
+        s = list({key: v1 for key, v1 in sorted(temp_dict.items(), key=lambda x: (x[1], x[0]), reverse=True)}.keys())
         return s
 
     def sortedbynumvulnerabilities(self):
@@ -644,8 +653,8 @@ class ResultTree(dict):
         temp_dict = {}
         for key in self:
             temp_dict[key] = self[key].num_vulns
-#        s = res = {key: val for key, val in sorted(temp_dict.items(), key = lambda ele: ele[1], reverse = True)}
-        return {key: val for key, val in sorted(temp_dict.items(), key = lambda ele: ele[1], reverse = True)}
+        #        s = res = {key: val for key, val in sorted(temp_dict.items(), key = lambda ele: ele[1], reverse = True)}
+        return {key: val for key, val in sorted(temp_dict.items(), key=lambda ele: ele[1], reverse=True)}
 
     def sorted_keys_by_rank(self):
         """
@@ -658,9 +667,6 @@ class ResultTree(dict):
             temp_list.append((self[key].nv['low'], self[key].nv['medium'], self[key].nv['high'],
                               self[key].nv['critical'], self[key].higher_cvss, key))
         s = [v[5] for v in sorted(temp_list,
-                                  key = lambda x: (x[4], x[3], x[2], x[1], x[0]),
+                                  key=lambda x: (x[4], x[3], x[2], x[1], x[0]),
                                   reverse=True)]
         return s
-
-
-

@@ -17,19 +17,21 @@ dolog = False
 
 from defusedxml import ElementTree as Et
 
+
 def parsers():
-        """
+    """
         Enum-like instance containing references to correct parser function
 
         > parsers()[key](param[s])
 
         :return: Pointer to parser function
         """
-        return {
-            'vulnerability': openvas_parser_by_vuln,
-            'host': openvas_parser_by_host,
-            'summary': openvas_parser_by_vuln
-        }
+    return {
+        'vulnerability': openvas_parser_by_vuln,
+        'host': openvas_parser_by_host,
+        'summary': openvas_parser_by_vuln
+    }
+
 
 def openvas_parser_by_vuln(config: Config):
     """
@@ -62,7 +64,7 @@ def openvas_parser_by_vuln(config: Config):
 
         if dolog: logging.debug(
             "================================================================================")
-#        if dolog: logging.debug("= {}".format(root.find("./task/name").text))  # DEBUG
+        #        if dolog: logging.debug("= {}".format(root.find("./task/name").text))  # DEBUG
         if dolog: logging.debug(
             "================================================================================")
 
@@ -102,6 +104,7 @@ def openvas_parser_by_vuln(config: Config):
 
     return list(vulnerabilities.values())
 
+
 def openvas_parser_by_host(config: Config):
     """
     This function takes an OpenVAS XML report and returns Vulnerability info
@@ -133,7 +136,7 @@ def openvas_parser_by_host(config: Config):
 
         if dolog: logging.debug(
             "================================================================================")
-#        if dolog: logging.debug("= {}".format(root.find("./task/name").text))  # DEBUG
+        #        if dolog: logging.debug("= {}".format(root.find("./task/name").text))  # DEBUG
         if dolog: logging.debug(
             "================================================================================")
 
@@ -150,4 +153,3 @@ def openvas_parser_by_host(config: Config):
         raise ImportError('No valid <results> found. Check exclusions and/or scope listings. I\'ve got nothing to do')
 
     return resulttree
-
