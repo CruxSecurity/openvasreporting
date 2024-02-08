@@ -1012,7 +1012,7 @@ def export_to_excel_by_host(resulttree: ResultTree, template=None, output_file='
         if len(resulttree[key].vuln_list) == 0:
             continue
 
-        name = "{:03X} - {}".format(i, resulttree[key].ip)
+        name = "{:03X} - {}".format(i, resulttree[key].ip.replace(":", "_"))
         ws_host = workbook.add_worksheet(name)
         ws_host.set_tab_color(Config.cvss_color(resulttree[key].higher_cvss))
         ws_host.write_url("A1", "internal:'{}'!A{}".format(ws_toc.get_name(), i + 3), format_align_center,
@@ -1044,8 +1044,8 @@ def export_to_excel_by_host(resulttree: ResultTree, template=None, output_file='
         ws_host.set_column("E:E", 10, format_align_center) # port.port/port.num
         ws_host.set_column("F:F", 10, format_align_center) # family
         ws_host.set_column("G:G", 22, format_align_center) # description
-        ws_host.set_column("H:H", 22, format_align_center) # recomendation (solution)
-        ws_host.set_column("I:I", 12, format_align_center) # recomendation type (solution_type)
+        ws_host.set_column("H:H", 22, format_align_center) # recommendation (solution)
+        ws_host.set_column("I:I", 12, format_align_center) # recommendation type (solution_type)
         ws_host.set_column("J:J", 7, format_align_center)
 
         ws_host.merge_range("B2:I2", resulttree[key].ip + ' - ' + resulttree[key].host_name, format_sheet_title_content)
@@ -1055,7 +1055,7 @@ def export_to_excel_by_host(resulttree: ResultTree, template=None, output_file='
         ws_host.write('E3', "Port", format_table_titles)
         ws_host.write('F3', "Family", format_table_titles)
         ws_host.write('G3', "Description", format_table_titles)
-        ws_host.write('H3', "Recomendation", format_table_titles)
+        ws_host.write('H3', "Recommendation", format_table_titles)
         ws_host.write('I3', "Type of fix", format_table_titles)
 
 
