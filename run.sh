@@ -10,5 +10,5 @@ mkdir -p /data/ready
 
 for file in /data/*; do
     BASENAME=$(basename "${file}")
-    cp -fv "${file}" "/data/ready/${BASENAME#* }"
+    cp -fv "${file}" "/data/ready/${BASENAME#*: }"
 done
