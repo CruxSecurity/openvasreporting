@@ -305,13 +305,12 @@ def export_to_excel_by_vuln(vuln_info, template=None, output_file='openvas_repor
         # --------------------
         ws_vuln.set_column("A:A", 7, format_align_center)
         ws_vuln.set_column("B:B", 20, format_align_center)
-        ws_vuln.set_column("C:C", 40, format_align_center)
-        ws_vuln.set_column("D:D", 7, format_align_center)
+        ws_vuln.set_column("C:C", 20, format_align_center)
+        ws_vuln.set_column("D:D", 50, format_align_center)
         ws_vuln.set_column("E:E", 15, format_align_center)
-        ws_vuln.set_column("F:F", 58, format_align_center)
-        ws_vuln.set_column('G:G', 7, format_align_center)
-        # ws_vuln.set_column("G:G", 35, format_align_center)
-        # ws_vuln.set_column("H:H", 7, format_align_center)
+        ws_vuln.set_column("F:F", 15, format_align_center)
+        ws_vuln.set_column("G:G", 20, format_align_center)
+        ws_vuln.set_column("H:H", 7, format_align_center)
         content_width = 120
 
         ws_vuln.write('B2', "Title", format_table_titles)
@@ -931,43 +930,34 @@ def export_to_excel_by_host(resulttree: ResultTree, template=None, output_file='
     # CHART
     # --------------------
     chart_sumcvss_summary = workbook.add_chart({'type': 'column'})
+
     chart_sumcvss_summary.add_series({
         'name': 'critical',
         'categories': '={}!D4:D{}'.format(sheet_name, max_hosts + 3),
         'values': '={}!E4:E{}'.format(sheet_name, max_hosts + 3),
-        'data_labels': {'value': True, 'position': 'outside_end', 'leader_lines': True, 'font': {'name': 'Tahoma', 'size': 8}},
         'fill': { 'width': 8, 'color': Config.colors()['critical']},
         'border': { 'color': Config.colors()['blue']},
     })
     chart_sumcvss_summary.add_series({
         'name': 'high',
+        'categories': '={}!D4:D{}'.format(sheet_name, max_hosts + 3),
         'values': '={}!F4:F{}'.format(sheet_name, max_hosts + 3),
-        'data_labels': {'value': True, 'position': 'outside_end', 'leader_lines': True, 'font': {'name': 'Tahoma', 'size': 8}},
         'fill': { 'width': 8, 'color': Config.colors()['high']},
         'border': { 'color': Config.colors()['blue']},
     })
     chart_sumcvss_summary.add_series({
         'name': 'medium',
+        'categories': '={}!D4:D{}'.format(sheet_name, max_hosts + 3),
         'values': '={}!G4:G{}'.format(sheet_name, max_hosts + 3),
-        'data_labels': {'value': True, 'position': 'outside_end', 'leader_lines': True, 'font': {'name': 'Tahoma', 'size': 8}},
         'fill': { 'width': 8, 'color': Config.colors()['medium']},
         'border': { 'color': Config.colors()['blue']},
     })
 
-    #chart_sumcvss_summary.add_series({
-        #'name': 'Hosts Ranking',
-        #'categories': '={}!D4:D{}'.format(sheet_name, max_hosts + 3),
-        #'values': '={}!E4:G{}'.format(sheet_name, max_hosts + 3),
-        #'data_labels': {'value': True, 'position': 'outside_end', 'leader_lines': True, 'font': {'name': 'Tahoma', 'size': 8}},
-        #'line': { 'width': 8, 'color': Config.colors()['blue']},
-        #'border': { 'color': Config.colors()['blue']},
-    #})
     chart_sumcvss_summary.set_title({'name': 'Hosts by CVSS', 'overlay': False, 'font': {'name': 'Tahoma'}})
     chart_sumcvss_summary.set_size({'width': 750, 'height': 350})
     chart_sumcvss_summary.set_legend({'position': 'left', 'font': {'name': 'Tahoma'}})
-    chart_sumcvss_summary.set_x_axis({'label_position': 'bottom',
-                                      'num_font': {'name': 'Tahoma', 'size': 8}
-                                    })
+    chart_sumcvss_summary.set_x_axis({'label_position': 'bottom'})
+    chart_sumcvss_summary.set_x_axis({'num_font': {'name': 'Tahoma', 'size': 8}})
     ws_sum.insert_chart("B15", chart_sumcvss_summary)
 
     # ====================
