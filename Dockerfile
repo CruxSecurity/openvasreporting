@@ -6,14 +6,10 @@ LABEL org.opencontainers.image.source https://github.com/jemurai/openvasreportin
 WORKDIR /app
 COPY . .
 
-RUN pip install -r requirements.txt \
+RUN pip install --upgrade pip setuptools wheel \
+    && pip install -r requirements.txt \
     && python ./setup.py install
 
 VOLUME /data
 
-CMD /bin/bash -c \
-    "for file in /data/*.xml; do \
-    test ! -r \"${file%.xml}.xlsx\" \
-    && echo \"Converting ${file}.\" \
-    && python3 -m openvasreporting -i \"${file}\" -o \"${file%.xml}.xlsx\"; \
-    done"
+CMD [ "./run.sh" ]
