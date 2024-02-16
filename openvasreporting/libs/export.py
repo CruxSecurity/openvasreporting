@@ -149,24 +149,7 @@ def export_to_excel_by_vuln(vuln_info, template=None, output_file='openvas_repor
     format_align_border = workbook.add_format({'font_name': 'Tahoma', 'font_size': 10,
                                                'align': 'center', 'valign': 'top',
                                                'border': 1, 'text_wrap': 1})
-    format_toc = {
-        'critical': workbook.add_format({'font_name': 'Tahoma', 'font_size': 10, 'font_color': 'white',
-                                         'align': 'center', 'valign': 'top',
-                                         'border': 1,
-                                         'bg_color': Config.colors()['critical']}),
-        'high': workbook.add_format({'font_name': 'Tahoma', 'font_size': 10, 'font_color': 'white',
-                                     'align': 'center', 'valign': 'top',
-                                     'border': 1, 'bg_color': Config.colors()['high']}),
-        'medium': workbook.add_format({'font_name': 'Tahoma', 'font_size': 10, 'font_color': 'white',
-                                       'align': 'center', 'valign': 'top',
-                                       'border': 1, 'bg_color': Config.colors()['medium']}),
-        'low': workbook.add_format({'font_name': 'Tahoma', 'font_size': 10, 'font_color': 'white',
-                                    'align': 'center', 'valign': 'top',
-                                    'border': 1, 'bg_color': Config.colors()['low']}),
-        'none': workbook.add_format({'font_name': 'Tahoma', 'font_size': 10, 'font_color': 'white',
-                                     'align': 'center', 'valign': 'top',
-                                     'border': 1, 'bg_color': Config.colors()['none']})
-    }
+    format_toc = set_workbook_format(workbook)
 
     # ====================
     # SUMMARY SHEET
@@ -383,6 +366,27 @@ def export_to_excel_by_vuln(vuln_info, template=None, output_file='openvas_repor
                 ws_vuln.write("E{}".format(j), "No port info")
 
     workbook.close()
+
+
+def set_workbook_format(workbook):
+    return {
+        'critical': workbook.add_format({'font_name': 'Tahoma', 'font_size': 10, 'font_color': 'white',
+                                         'align': 'center', 'valign': 'top',
+                                         'border': 1,
+                                         'bg_color': Config.colors()['critical']}),
+        'high': workbook.add_format({'font_name': 'Tahoma', 'font_size': 10, 'font_color': 'white',
+                                     'align': 'center', 'valign': 'top',
+                                     'border': 1, 'bg_color': Config.colors()['high']}),
+        'medium': workbook.add_format({'font_name': 'Tahoma', 'font_size': 10, 'font_color': 'white',
+                                       'align': 'center', 'valign': 'top',
+                                       'border': 1, 'bg_color': Config.colors()['medium']}),
+        'low': workbook.add_format({'font_name': 'Tahoma', 'font_size': 10, 'font_color': 'white',
+                                    'align': 'center', 'valign': 'top',
+                                    'border': 1, 'bg_color': Config.colors()['low']}),
+        'none': workbook.add_format({'font_name': 'Tahoma', 'font_size': 10, 'font_color': 'white',
+                                     'align': 'center', 'valign': 'top',
+                                     'border': 1, 'bg_color': Config.colors()['none']})
+    }
 
 
 def add_worksheet_with_defaults(workbook, sheet_name):
@@ -792,7 +796,7 @@ def export_to_excel_by_host(resulttree: ResultTree, template=None, output_file='
     else:
         for key in resulttree.keys():
             if not isinstance(resulttree[key], Host):
-                raise TypeError("Expected Host, got '{}' instead".format(type(x)))
+                raise TypeError("Expected Host, got '{}' instead".format(type(resulttree[key])))
     if not isinstance(output_file, str):
         raise TypeError("Expected str, got '{}' instead".format(type(output_file)))
     else:
@@ -852,24 +856,7 @@ def export_to_excel_by_host(resulttree: ResultTree, template=None, output_file='
                                                'align': 'right', 'valign': 'top',
                                                'border': 1, 'text_wrap': 1})
     format_number_border_right.num_format = '#.00'
-    format_toc = {
-        'critical': workbook.add_format({'font_name': 'Tahoma', 'font_size': 10, 'font_color': 'white',
-                                         'align': 'center', 'valign': 'top',
-                                         'border': 1,
-                                         'bg_color': Config.colors()['critical']}),
-        'high': workbook.add_format({'font_name': 'Tahoma', 'font_size': 10, 'font_color': 'white',
-                                     'align': 'center', 'valign': 'top',
-                                     'border': 1, 'bg_color': Config.colors()['high']}),
-        'medium': workbook.add_format({'font_name': 'Tahoma', 'font_size': 10, 'font_color': 'white',
-                                       'align': 'center', 'valign': 'top',
-                                       'border': 1, 'bg_color': Config.colors()['medium']}),
-        'low': workbook.add_format({'font_name': 'Tahoma', 'font_size': 10, 'font_color': 'white',
-                                    'align': 'center', 'valign': 'top',
-                                    'border': 1, 'bg_color': Config.colors()['low']}),
-        'none': workbook.add_format({'font_name': 'Tahoma', 'font_size': 10, 'font_color': 'white',
-                                     'align': 'center', 'valign': 'top',
-                                     'border': 1, 'bg_color': Config.colors()['none']})
-    }
+    format_toc = set_workbook_format(workbook)
 
     # ====================
     # SUMMARY SHEET
