@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-for file in /data/*.xml; do
+for file in /data/*Full.xml; do
     test ! -r "${file%.xml}.xlsx" &&
         echo "Converting ${file}." &&
         python3 -m openvasreporting -i "${file}" -o "${file%.xml}.xlsx"
@@ -8,7 +8,7 @@ done
 
 mkdir -p /data/ready
 
-for file in /data/*; do
+for file in /data/*.*; do
     BASENAME=$(basename "${file}")
     cp -fv "${file}" "/data/ready/${BASENAME#*: }"
 done

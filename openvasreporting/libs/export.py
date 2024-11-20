@@ -245,7 +245,8 @@ def export_to_excel_by_vuln(vuln_info, template=None, output_file='openvas_repor
 
     ws_toc.set_column("A:A", 7)
     ws_toc.set_column("B:B", 5)
-    ws_toc.set_column("C:C", 150)
+    ws_toc.set_column("C:C", 100)
+    # D:D at default width
     ws_toc.set_column("E:E", 15)
     ws_toc.set_column("F:F", 50)
     ws_toc.set_column("G:G", 7)
